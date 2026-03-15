@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedLens AI | Insight Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fcfdfe; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+        .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+        .pro-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #f1f5f9; }
+        .pro-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1); border-color: #6366f1; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-900">
+
+    <nav class="glass sticky top-0 z-50 px-8 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="gradient-bg w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"><span class="text-white font-bold text-xl uppercase italic">M</span></div>
+                <h1 class="text-xl font-800 tracking-tighter italic">MEDLENS <span class="text-indigo-600">AI</span></h1>
+            </div>
+            <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                <div class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">System Ready</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto py-12 px-6">
+        
+        <div id="role-selection" class="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div class="text-center mb-12">
+                <h2 class="text-5xl font-extrabold tracking-tight mb-4">Clinical Decision Support</h2>
+                <p class="text-slate-500 text-lg max-w-2xl mx-auto">Select your workflow to access the AWS-powered diagnostic engine.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div onclick="showSection('patient-portal')" class="pro-card group bg-white p-12 rounded-[2.5rem] shadow-sm">
+                    <div class="text-3xl mb-8">📋</div>
+                    <h3 class="text-2xl font-bold mb-3 tracking-tight">Patient Intake</h3>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed">Register patients and sync history to Amazon DynamoDB.</p>
+                </div>
+
+                <div onclick="showSection('doctor-portal')" class="pro-card group bg-white p-12 rounded-[2.5rem] shadow-sm border-2 border-purple-200">
+                    <div class="text-3xl mb-8">🩺</div>
+                    <h3 class="text-2xl font-bold mb-3 tracking-tight">Diagnostic Engine</h3>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed">Analyze symptoms against global clinical data using Bedrock AI.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="patient-portal" class="hidden max-w-xl mx-auto animate-in fade-in duration-500">
+            <button onclick="showSection('role-selection')" class="mb-8 text-slate-400 hover:text-indigo-600 font-bold flex items-center gap-2 transition-all">← Back to Menu</button>
+            <div class="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-50">
+                <h2 class="text-3xl font-black mb-8 italic">New Registration</h2>
+                <div class="space-y-6">
+                    <input id="reg-id" type="text" placeholder="Patient ID (e.g. PAT1)" class="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    <textarea id="reg-history" placeholder="Prior history, allergies, chronic data..." class="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" rows="5"></textarea>
+                    <button id="save-btn" onclick="handleRegister()" class="w-full gradient-bg text-white p-5 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest">Sync to Cloud</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="doctor-portal" class="hidden space-y-10 animate-in fade-in duration-500">
+            <button onclick="showSection('role-selection')" class="text-slate-400 hover:text-indigo-600 font-bold flex items-center gap-2">← Back to Menu</button>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-50">
+                    <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-8">01. Retrieval</h3>
+                    <div class="flex gap-3 mb-8">
+                        <input id="search-id" type="text" placeholder="Enter Patient ID..." class="flex-1 p-4 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="fetchHistory()" class="bg-slate-900 text-white px-8 rounded-xl font-bold hover:bg-black transition-all">LOAD</button>
+                    </div>
+                    <div id="history-box" class="p-6 bg-slate-50 rounded-2xl min-h-[150px] text-slate-400 italic font-light border border-dashed border-slate-200">Awaiting clinical identifier...</div>
+                </div>
+
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-50">
+                    <h3 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-8">02. Observation</h3>
+                    <textarea id="symptoms" placeholder="Describe acute symptoms..." class="w-full p-4 bg-slate-50 border-none rounded-xl mb-6 focus:ring-2 focus:ring-purple-500 outline-none transition-all" rows="4"></textarea>
+                    <button onclick="runAI()" class="w-full bg-slate-900 text-white p-5 rounded-xl font-bold text-lg hover:bg-purple-700 transition-all active:scale-95">GENERATE INSIGHTS</button>
+                </div>
+            </div>
+
+            <div id="ai-results" class="hidden animate-in slide-in-from-bottom-10 duration-700">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-indigo-600 p-6 rounded-[2rem] text-white shadow-lg">
+                        <p class="text-[10px] font-bold uppercase opacity-60 tracking-widest">Health Indicators</p>
+                        <h4 class="text-2xl font-black mt-2">Overall: Stable</h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg">
+                        <p class="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Bedrock Analysis</p>
+                        <h4 class="text-2xl font-black mt-2">Risk: Moderate</h4>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-lg">
+                        <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Sync Status</p>
+                        <h4 class="text-2xl font-black mt-2">Active Node</h4>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 rounded-[3.5rem] p-12 text-white shadow-2xl relative border border-slate-800">
+                    <h3 class="text-purple-400 font-bold tracking-widest text-xs uppercase mb-10">AI Clinical Explanation</h3>
+                    <div id="results-content" class="text-slate-200 text-xl leading-relaxed font-light whitespace-pre-wrap"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'https://orlczyoxgh.execute-api.ap-southeast-2.amazonaws.com/prod';
+
+        function showSection(id) {
+            ['role-selection', 'patient-portal', 'doctor-portal'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function handleRegister() {
+            const pId = document.getElementById('reg-id').value;
+            const history = document.getElementById('reg-history').value;
+            const btn = document.getElementById('save-btn');
+            if(!pId || !history) return alert("Validation Failed.");
+            
+            btn.innerText = "UPLOADING..."; btn.disabled = true;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PatientID: pId, History: history, Symptoms: "INIT" })
+                });
+                alert("Cloud Sync Successful.");
+                showSection('role-selection');
+            } catch (e) { alert("Network Error. Ensure Person 1 clicked 'Deploy'."); }
+            btn.innerText = "SYNC TO CLOUD"; btn.disabled = false;
+        }
+
+        async function fetchHistory() {
+            const id = document.getElementById('search-id').value;
+            const box = document.getElementById('history-box');
+            if(!id) return;
+            box.innerText = "Querying DynamoDB...";
+            try {
+                const r = await fetch(`${API_URL}?PatientID=${id}`);
+                const data = await r.json();
+                box.innerText = data.History || "Record not found.";
+                box.classList.remove('italic');
+            } catch (e) { box.innerText = "Fetch Error."; }
+        }
+
+        async function runAI() {
+            const pId = document.getElementById('search-id').value;
+            const symptoms = document.getElementById('symptoms').value;
+            const history = document.getElementById('history-box').innerText;
+            const resArea = document.getElementById('ai-results');
+            const content = document.getElementById('results-content');
+            
+            if(!symptoms) return alert("Observations required.");
+            resArea.classList.remove('hidden');
+            content.innerHTML = '<div class="animate-pulse text-purple-400">Processing via Bedrock Claude-3...</div>';
+            resArea.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                const r = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ PatientID: pId, Symptoms: symptoms, History: history })
+                });
+                const data = await r.json();
+                content.innerText = data.diagnosis || "No analysis returned.";
+            } catch (e) { content.innerText = "AI Processing Failed."; }
+        }
+    </script>
+</body>
+</html>
